@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Habit Tracker</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        table {
+            font-size: 0.75rem;
+        }
+        table th, table td {
+            padding: 0.25rem !important;
+        }
+        .habit-name-col {
+            min-width: 180px !important;
+            font-size: 0.8rem;
+        }
+        .week-header {
+            font-size: 0.7rem;
+        }
+        .day-label {
+            font-size: 0.65rem;
+        }
+        #habitTable table {
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen p-4">
+        <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-6">
+            <!-- Header -->
+            <div class="bg-green-600 text-white p-4 rounded-t-lg mb-6">
+                <h1 class="text-2xl font-bold">SMART HABIT TRACKER</h1>
+            </div>
+
+            <!-- Date Display -->
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800" id="monthDisplay">DECEMBER 2025</h2>
+                <div class="mt-2 bg-green-50 inline-block px-6 py-2 rounded border border-green-200">
+                    <span class="text-sm font-semibold text-gray-700">Today's Date</span>
+                    <p class="text-lg font-bold text-gray-900" id="todayDate"></p>
+                </div>
+            </div>
+
+            <!-- Stats Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white border-2 border-green-200 rounded-lg p-6">
+                    <h3 class="text-sm font-semibold text-green-600 mb-2">Total Habits Completed</h3>
+                    <p class="text-5xl font-bold text-gray-800" id="totalCompleted">0</p>
+                </div>
+
+                <div class="bg-white border-2 border-red-200 rounded-lg p-6">
+                    <h3 class="text-sm font-semibold text-red-600 mb-2">Total Habits Uncompleted</h3>
+                    <p class="text-5xl font-bold text-gray-800" id="totalUncompleted">0</p>
+                </div>
+
+                <div class="bg-white border-2 border-green-200 rounded-lg p-6">
+                    <h3 class="text-sm font-semibold text-green-600 mb-2">Monthly Progress</h3>
+                    <div class="relative pt-1">
+                        <div class="flex items-center justify-center">
+                            <div class="relative w-32 h-32">
+                                <svg class="transform -rotate-90 w-32 h-32" id="progressCircle">
+                                    <circle cx="64" cy="64" r="56" stroke="#e5e7eb" stroke-width="12" fill="none" />
+                                    <circle cx="64" cy="64" r="56" stroke="#10b981" stroke-width="12" fill="none" id="progressBar"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-gray-800" id="progressText">0 / 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Habit Tracker Table -->
+            <div class="w-full">
+                <div class="bg-blue-500 text-white p-3 rounded-t-lg">
+                    <p class="text-sm font-semibold">STEP 3: CHECK OFF COMPLETED HABITS BY CLICKING THE CIRCLE</p>
+                </div>
+                
+                <div id="habitTable" class="w-full"></div>
+            </div>
+
+            <!-- Daily Completion Graph -->
+            <div class="mt-8 bg-white border-2 border-gray-200 rounded-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Habits Completed / Day</h3>
+                <div class="relative h-64">
+                    <svg class="w-full h-full" id="dailyGraph" viewBox="0 0 800 250" preserveAspectRatio="none"></svg>
+                    
+                    <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 -ml-8" id="yAxisLabels"></div>
+                </div>
+                
+                <div class="flex justify-between mt-2 text-xs text-gray-500" id="xAxisLabels"></div>
+                <div class="mt-2 text-center text-sm text-gray-600">
+                    Day of Month
+                </div>
+            </div>
+
+            <!-- Month/Year Selector -->
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-8 mb-6">
+                <p class="text-sm font-semibold text-blue-800 mb-3">STEP 1: SELECT MONTH & YEAR</p>
+                <div class="flex gap-4 items-center justify-center flex-wrap">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                        <select id="monthSelect" class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11" selected>December</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                        <input type="number" id="yearInput" value="2025" min="2020" max="2030" class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none w-32">
+                    </div>
+                    <div class="self-end">
+                        <button onclick="changeMonth()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">Update Month</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Habits -->
+            <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
+                <p class="text-sm font-semibold text-green-800 mb-3">STEP 2: MANAGE YOUR HABITS</p>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="newHabitInput" placeholder="Enter new habit name..." class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                    <button onclick="addHabit()" class="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">Add Habit</button>
+                </div>
+                <div id="habitList" class="space-y-2"></div>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="text-center mb-6">
+                <button onclick="resetAllData()" class="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">Reset All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentYear = 2025;
+        let currentMonth = 11; // December (0-indexed)
+        let habits = [];
+        let daysInMonth = 31;
+
+        // Initialize with default habits
+        function initializeDefaultHabits() {
+            habits = [
+                { id: Date.now() + 1, name: "Go to the gym", completions: {} },
+                { id: Date.now() + 2, name: "Read 1 chapter of Rich Dad Poor Dad", completions: {} },
+                { id: Date.now() + 3, name: "Catch up with 1 friend", completions: {} },
+                { id: Date.now() + 4, name: "Do 2 hours of deep work", completions: {} },
+                { id: Date.now() + 5, name: "Vacuum my room", completions: {} },
+                { id: Date.now() + 6, name: "Create 1 YOUTUBE video", completions: {} },
+                { id: Date.now() + 7, name: "Drink 8 liters of water", completions: {} },
+                { id: Date.now() + 8, name: "Journal", completions: {} },
+                { id: Date.now() + 9, name: "Stretching for 15 minutes", completions: {} },
+                { id: Date.now() + 10, name: "Meditate", completions: {} },
+            ];
+        }
+
+        // Get days in current month
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        // Load saved data
+        function loadData() {
+            const savedYear = localStorage.getItem('habitYear');
+            const savedMonth = localStorage.getItem('habitMonth');
+            const savedHabits = localStorage.getItem('habitTrackerData');
+            
+            if (savedYear) currentYear = parseInt(savedYear);
+            if (savedMonth) currentMonth = parseInt(savedMonth);
+            if (savedHabits) {
+                habits = JSON.parse(savedHabits);
+            } else {
+                initializeDefaultHabits();
+            }
+            
+            daysInMonth = getDaysInMonth(currentYear, currentMonth);
+            document.getElementById('monthSelect').value = currentMonth;
+            document.getElementById('yearInput').value = currentYear;
+        }
+
+        // Save data
+        function saveData() {
+            localStorage.setItem('habitYear', currentYear);
+            localStorage.setItem('habitMonth', currentMonth);
+            localStorage.setItem('habitTrackerData', JSON.stringify(habits));
+        }
+
+        // Change month
+        function changeMonth() {
+            const newMonth = parseInt(document.getElementById('monthSelect').value);
+            const newYear = parseInt(document.getElementById('yearInput').value);
+            
+            currentMonth = newMonth;
+            currentYear = newYear;
+            daysInMonth = getDaysInMonth(currentYear, currentMonth);
+            
+            saveData();
+            updateUI();
+        }
+
+        // Add new habit
+        function addHabit() {
+            const input = document.getElementById('newHabitInput');
+            const name = input.value.trim();
+            
+            if (name) {
+                habits.push({
+                    id: Date.now(),
+                    name: name,
+                    completions: {}
+                });
+                input.value = '';
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Delete habit
+        function deleteHabit(id) {
+            if (confirm('Are you sure you want to delete this habit?')) {
+                habits = habits.filter(h => h.id !== id);
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Edit habit name
+        function editHabit(id) {
+            const habit = habits.find(h => h.id === id);
+            if (habit) {
+                const newName = prompt('Edit habit name:', habit.name);
+                if (newName && newName.trim()) {
+                    habit.name = newName.trim();
+                    saveData();
+                    updateUI();
+                }
+            }
+        }
+
+        // Toggle completion
+        function toggleCompletion(habitId, dayIndex) {
+            const habit = habits.find(h => h.id === habitId);
+            if (habit) {
+                const key = `${currentYear}-${currentMonth}-${dayIndex}`;
+                habit.completions[key] = !habit.completions[key];
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Get completion for specific day
+        function isCompleted(habit, dayIndex) {
+            const key = `${currentYear}-${currentMonth}-${dayIndex}`;
+            return habit.completions[key] || false;
+        }
+
+        // Calculate stats
+        function getCompletionCount(habit) {
+            let count = 0;
+            for (let i = 0; i < daysInMonth; i++) {
+                if (isCompleted(habit, i)) count++;
+            }
+            return count;
+        }
+
+        function getTotalCompleted() {
+            return habits.reduce((sum, habit) => sum + getCompletionCount(habit), 0);
+        }
+
+        function getTotalUncompleted() {
+            return habits.reduce((sum, habit) => sum + (daysInMonth - getCompletionCount(habit)), 0);
+        }
+
+        function getCompletionPercentage(habit) {
+            return Math.round((getCompletionCount(habit) / daysInMonth) * 100);
+        }
+
+        // Add milestone
+        function addMilestone() {
+            const title = document.getElementById('milestoneTitle').value.trim();
+            const target = parseInt(document.getElementById('milestoneTarget').value);
+            
+            if (title && target > 0) {
+                const emojis = ['🎯', '🏆', '⭐', '🌟', '👑', '💎', '🔥', '✨', '🎉', '🚀'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                milestones.push({
+                    id: Date.now(),
+                    title: title,
+                    target: target,
+                    achieved: false,
+                    emoji: randomEmoji
+                });
+                
+                document.getElementById('milestoneTitle').value = '';
+                document.getElementById('milestoneTarget').value = '';
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Delete milestone
+        function deleteMilestone(id) {
+            if (confirm('Delete this milestone?')) {
+                milestones = milestones.filter(m => m.id !== id);
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Render milestones
+        function renderMilestones() {
+            const container = document.getElementById('milestonesList');
+            const totalCompleted = getTotalCompleted();
+            let html = '';
+            
+            milestones.forEach(milestone => {
+                const isAchieved = totalCompleted >= milestone.target;
+                if (isAchieved && !milestone.achieved) {
+                    milestone.achieved = true;
+                    saveData();
+                }
+                
+                const progress = Math.min(100, (totalCompleted / milestone.target) * 100);
+                
+                html += `
+                    <div class="bg-white rounded-lg p-4 border-2 ${isAchieved ? 'border-green-400 bg-green-50' : 'border-gray-200'} relative">
+                        ${isAchieved ? '<div class="absolute top-2 right-2 text-2xl animate-bounce">🎉</div>' : ''}
+                        <button onclick="deleteMilestone(${milestone.id})" class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xs">✕</button>
+                        <div class="text-3xl mb-2">${milestone.emoji}</div>
+                        <h4 class="font-bold text-gray-800 mb-1 pr-6">${milestone.title}</h4>
+                        <p class="text-sm text-gray-600 mb-2">${totalCompleted} / ${milestone.target} tasks</p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div class="h-full ${isAchieved ? 'bg-green-500' : 'bg-purple-500'} transition-all" style="width: ${progress}%"></div>
+                        </div>
+                        ${isAchieved ? '<p class="text-xs text-green-600 font-bold mt-2">✓ ACHIEVED!</p>' : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-gray-500 text-sm col-span-3 text-center">No milestones yet. Add your first milestone below!</p>';
+        }
+
+        // Render habit list
+        function renderHabitList() {
+            const container = document.getElementById('habitList');
+            let html = '';
+            
+            habits.forEach(habit => {
+                html += `
+                    <div class="flex items-center gap-2 bg-white p-2 rounded border border-gray-200">
+                        <span class="flex-1 text-gray-800">${habit.name}</span>
+                        <button onclick="editHabit(${habit.id})" class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">Edit</button>
+                        <button onclick="deleteHabit(${habit.id})" class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">Delete</button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-gray-500 text-sm">No habits added yet. Add your first habit above!</p>';
+        }
+
+        // Render habit table
+        function renderHabitTable() {
+            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const weeksNeeded = Math.ceil(daysInMonth / 7);
+            
+            let html = '<table class="w-full border-collapse">';
+            
+            // Header rows
+            html += '<thead>';
+            html += '<tr class="bg-green-600 text-white">';
+            html += '<th class="border border-gray-300 text-left sticky left-0 bg-green-600" style="width: 40px">S/N</th>';
+            html += '<th class="border border-gray-300 text-left sticky bg-green-600 habit-name-col" style="left: 40px">HABITS</th>';
+            for (let i = 0; i < weeksNeeded; i++) {
+                html += `<th class="border border-gray-300 text-center week-header" colspan="7">WEEK ${i + 1}</th>`;
+            }
+            html += '<th class="border border-gray-300 text-center bg-yellow-100 text-gray-800" style="min-width: 80px">COMPLETED</th>';
+            html += '<th class="border border-gray-300 text-center" style="min-width: 120px">TOTAL</th>';
+            html += '</tr>';
+
+            // Week days row
+            html += '<tr class="bg-green-500 text-white day-label">';
+            html += '<th class="border border-gray-300 sticky left-0 bg-green-500"></th>';
+            html += '<th class="border border-gray-300 sticky bg-green-500" style="left: 40px"></th>';
+            for (let i = 0; i < weeksNeeded; i++) {
+                weekDays.forEach(day => {
+                    html += `<th class="border border-gray-300">${day}</th>`;
+                });
+            }
+            html += '<th class="border border-gray-300 bg-yellow-50"></th>';
+            html += '<th class="border border-gray-300"></th>';
+            html += '</tr>';
+
+            // Day numbers row
+            html += '<tr class="bg-green-400 text-white day-label">';
+            html += '<th class="border border-gray-300 sticky left-0 bg-green-400"></th>';
+            html += '<th class="border border-gray-300 sticky bg-green-400" style="left: 40px"></th>';
+            for (let i = 0; i < daysInMonth; i++) {
+                html += `<th class="border border-gray-300">${i + 1}</th>`;
+            }
+            // Fill empty cells
+            const emptyCells = (weeksNeeded * 7) - daysInMonth;
+            for (let i = 0; i < emptyCells; i++) {
+                html += '<th class="border border-gray-300 bg-gray-100"></th>';
+            }
+            html += '<th class="border border-gray-300 bg-yellow-50"></th>';
+            html += '<th class="border border-gray-300"></th>';
+            html += '</tr>';
+            html += '</thead>';
+
+            // Body
+            html += '<tbody>';
+            habits.forEach((habit, idx) => {
+                const completed = getCompletionCount(habit);
+                const percentage = getCompletionPercentage(habit);
+                
+                html += '<tr class="hover:bg-gray-50">';
+                html += `<td class="border border-gray-300 text-center font-semibold sticky left-0 bg-white" style="width: 40px">${idx + 1}</td>`;
+                html += `<td class="border border-gray-300 sticky bg-white habit-name-col" style="left: 40px">${habit.name}</td>`;
+                
+                for (let i = 0; i < daysInMonth; i++) {
+                    const completed = isCompleted(habit, i);
+                    html += `<td class="border border-gray-300 text-center cursor-pointer hover:bg-gray-50" onclick="toggleCompletion(${habit.id}, ${i})">`;
+                    html += `<div class="w-5 h-5 mx-auto rounded-full transition-all flex items-center justify-center ${completed ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-200 hover:bg-gray-300'}">`;
+                    if (completed) {
+                        html += `<svg class="w-3 h-3 text-white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 13l4 4L19 7"></path></svg>`;
+                    }
+                    html += '</div></td>';
+                }
+                
+                // Fill empty cells
+                for (let i = 0; i < emptyCells; i++) {
+                    html += '<td class="border border-gray-300 bg-gray-100"></td>';
+                }
+                
+                html += `<td class="border border-gray-300 text-center font-semibold bg-yellow-50" style="font-size: 0.7rem">${completed} / ${daysInMonth}</td>`;
+                html += '<td class="border border-gray-300">';
+                html += '<div class="flex items-center gap-1">';
+                html += '<div class="flex-1 bg-gray-200 rounded-full h-5 overflow-hidden">';
+                html += `<div class="h-full flex items-center justify-center text-white font-bold transition-all ${percentage === 100 ? 'bg-green-600' : 'bg-purple-600'}" style="width: ${percentage}%; font-size: 0.65rem">`;
+                if (percentage > 20) html += `${percentage}%`;
+                html += '</div></div>';
+                if (percentage <= 20) html += `<span class="font-bold" style="font-size: 0.65rem">${percentage}%</span>`;
+                html += '</div></td>';
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            html += '</table>';
+            
+            document.getElementById('habitTable').innerHTML = html;
+        }
+
+        // Render graph
+        function renderGraph() {
+            const svg = document.getElementById('dailyGraph');
+            let html = '';
+            
+            // Grid lines
+            [0, 25, 50, 75, 100].forEach(percent => {
+                const y = 250 - (percent * 2.5);
+                html += `<line x1="0" y1="${y}" x2="800" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
+            });
+            
+            if (habits.length === 0) {
+                svg.innerHTML = html;
+                return;
+            }
+            
+            // Calculate path data
+            let pathData = 'M 0 250 ';
+            let lineData = '';
+            let dots = '';
+            
+            for (let i = 0; i < daysInMonth; i++) {
+                const dayCompletions = habits.filter(h => isCompleted(h, i)).length;
+                const heightPercent = (dayCompletions / habits.length) * 100;
+                const x = (i / Math.max(1, daysInMonth - 1)) * 800;
+                const y = 250 - (heightPercent * 2.5);
+                
+                pathData += `L ${x} ${y} `;
+                lineData += `${i === 0 ? 'M' : 'L'} ${x} ${y} `;
+                
+                const intensity = heightPercent / 100;
+                const greenShade = intensity >= 0.9 ? '#22c55e' : 
+                                 intensity >= 0.7 ? '#4ade80' : 
+                                 intensity >= 0.5 ? '#86efac' : 
+                                 intensity >= 0.3 ? '#bbf7d0' : '#d1fae5';
+                
+                dots += `<circle cx="${x}" cy="${y}" r="5" fill="${greenShade}" stroke="#fff" stroke-width="2"/>`;
+            }
+            
+            pathData += 'L 800 250 Z';
+            
+            html += `<path d="${pathData}" fill="rgba(34, 197, 94, 0.2)"/>`;
+            html += `<path d="${lineData}" fill="none" stroke="#22c55e" stroke-width="3"/>`;
+            html += dots;
+            
+            svg.innerHTML = html;
+            
+            // Y-axis labels
+            const maxHabits = habits.length;
+            document.getElementById('yAxisLabels').innerHTML = `
+                <span>${maxHabits}</span>
+                <span>${Math.floor(maxHabits * 0.75)}</span>
+                <span>${Math.floor(maxHabits * 0.5)}</span>
+                <span>${Math.floor(maxHabits * 0.25)}</span>
+                <span>0</span>
+            `;
+            
+            // X-axis labels
+            const xLabels = [];
+            if (daysInMonth <= 14) {
+                for (let i = 1; i <= daysInMonth; i++) xLabels.push(i);
+            } else {
+                const step = Math.ceil(daysInMonth / 7);
+                for (let i = 1; i <= daysInMonth; i += step) xLabels.push(i);
+            }
+            
+            document.getElementById('xAxisLabels').innerHTML = xLabels.map(d => `<span>${d}</span>`).join('');
+        }
+
+        // Update all UI
+        function updateUI() {
+            const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+            const today = new Date();
+            
+            document.getElementById('monthDisplay').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            document.getElementById('todayDate').textContent = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
+            const completed = getTotalCompleted();
+            const uncompleted = getTotalUncompleted();
+            const total = habits.length * daysInMonth;
+            
+            document.getElementById('totalCompleted').textContent = completed;
+            document.getElementById('totalUncompleted').textContent = uncompleted;
+            document.getElementById('progressText').textContent = `${completed} / ${total}`;
+            
+            const circumference = 2 * Math.PI * 56;
+            const offset = total > 0 ? circumference * (1 - completed / total) : circumference;
+            document.getElementById('progressBar').style.strokeDasharray = circumference;
+            document.getElementById('progressBar').style.strokeDashoffset = offset;
+            
+            renderHabitList();
+            renderHabitTable();
+            renderGraph();
+        }
+
+        // Reset all data
+        function resetAllData() {
+            if (confirm('Are you sure you want to reset all data? This cannot be undone!')) {
+                localStorage.clear();
+                initializeDefaultHabits();
+                currentYear = 2025;
+                currentMonth = 11;
+                daysInMonth = 31;
+                saveData();
+                document.getElementById('monthSelect').value = currentMonth;
+                document.getElementById('yearInput').value = currentYear;
+                updateUI();
+            }
+        }
+
+        // Initialize
+        loadData();
+        updateUI();
+    </script>
+</body>
+</html>
